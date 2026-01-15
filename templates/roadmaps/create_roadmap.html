@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Roadmap - RoadmapAI{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Create Learning Roadmap</h1>
+    <p class="mt-1 text-gray-500">
+      Tell us what you want to learn and we'll create a personalized path for
+      you.
+    </p>
+  </div>
+
+  {% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div
+      class="rounded-md p-4 {% if message.tags == 'success' %}bg-green-50 text-green-800{% elif message.tags == 'error' %}bg-red-50 text-red-800{% else %}bg-gray-50 text-gray-800{% endif %}"
+    >
+      <p class="text-sm">{{ message }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Progress Steps -->
+  <div class="mb-8">
+    <div class="flex items-center justify-center" x-data="{ currentStep: 1 }">
+      <div class="flex items-center">
+        <div
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 text-white font-semibold"
+        >
+          1
+        </div>
+        <span class="ml-2 text-sm font-medium text-gray-900">Your Goals</span>
+      </div>
+      <div class="w-16 h-0.5 bg-gray-300 mx-4"></div>
+      <div class="flex items-center">
+        <div
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-gray-600 font-semibold"
+        >
+          2
+        </div>
+        <span class="ml-2 text-sm font-medium text-gray-500">Your Level</span>
+      </div>
+      <div class="w-16 h-0.5 bg-gray-300 mx-4"></div>
+      <div class="flex items-center">
+        <div
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-gray-600 font-semibold"
+        >
+          3
+        </div>
+        <span class="ml-2 text-sm font-medium text-gray-500">Generate</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form
+    method="POST"
+    action="{% url 'create_roadmap' %}"
+    class="bg-white shadow rounded-lg"
+    x-data="{ 
+              subject: '', 
+              level: 'beginner', 
+              goals: '',
+              weeklyHours: 5,
+              deadline: '',
+              preferredResources: [],
+              isSubmitting: false
+          }"
+  >
+    {% csrf_token %}
+
+    <div class="p-6 space-y-6">
+      <!-- Subject -->
+      <div>
+        <label for="subject" class="block text-sm font-medium text-gray-700"
+          >What do you want to learn?</label
+        >
+        <input
+          type="text"
+          name="subject"
+          id="subject"
+          x-model="subject"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3 px-4 border"
+          placeholder="e.g., Python, Web Development, Machine Learning"
+        />
+        <p class="mt-1 text-xs text-gray-500">
+          Be specific about the topic or skill you want to master
+        </p>
+      </div>
+
+      <!-- Current Level -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700"
+          >What's your current level?</label
+        >
+        <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <label
+            class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none"
+            :class="level === 'beginner' ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-300'"
+          >
+            <input
+              type="radio"
+              name="current_level"
+              value="beginner"
+              x-model="level"
+              class="sr-only"
+            />
+            <div class="flex flex-col">
+              <span class="block text-sm font-medium text-gray-900"
+                >Beginner</span
+              >
+              <span class="block text-xs text-gray-500">No experience</span>
+            </div>
+          </label>
+          <label
+            class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none"
+            :class="level === 'intermediate' ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-300'"
+          >
+            <input
+              type="radio"
+              name="current_level"
+              value="intermediate"
+              x-model="level"
+              class="sr-only"
+            />
+            <div class="flex flex-col">
+              <span class="block text-sm font-medium text-gray-900"
+                >Intermediate</span
+              >
+              <span class="block text-xs text-gray-500">Some basics</span>
+            </div>
+          </label>
+          <label
+            class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none"
+            :class="level === 'advanced' ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-300'"
+          >
+            <input
+              type="radio"
+              name="current_level"
+              value="advanced"
+              x-model="level"
+              class="sr-only"
+            />
+            <div class="flex flex-col">
+              <span class="block text-sm font-medium text-gray-900"
+                >Advanced</span
+              >
+              <span class="block text-xs text-gray-500">Solid foundation</span>
+            </div>
+          </label>
+          <label
+            class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none"
+            :class="level === 'expert' ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-300'"
+          >
+            <input
+              type="radio"
+              name="current_level"
+              value="expert"
+              x-model="level"
+              class="sr-only"
+            />
+            <div class="flex flex-col">
+              <span class="block text-sm font-medium text-gray-900"
+                >Expert</span
+              >
+              <span class="block text-xs text-gray-500">Deep knowledge</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div>
+        <label for="goals" class="block text-sm font-medium text-gray-700"
+          >What are your learning goals?</label
+        >
+        <textarea
+          name="goals"
+          id="goals"
+          rows="3"
+          x-model="goals"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-4 border"
+          placeholder="e.g., I want to build web applications, land a job as a developer, automate my work tasks..."
+        ></textarea>
+      </div>
+
+      <!-- Weekly Hours -->
+      <div>
+        <label
+          for="weekly_hours"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Hours per week for learning:
+          <span
+            class="text-indigo-600 font-semibold"
+            x-text="weeklyHours"
+          ></span>
+        </label>
+        <input
+          type="range"
+          name="weekly_hours"
+          id="weekly_hours"
+          min="1"
+          max="40"
+          x-model="weeklyHours"
+          class="mt-2 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div class="flex justify-between text-xs text-gray-500 mt-1">
+          <span>1 hour</span>
+          <span>40 hours</span>
+        </div>
+      </div>
+
+      <!-- Deadline -->
+      <div>
+        <label for="deadline" class="block text-sm font-medium text-gray-700"
+          >Target completion date (optional)</label
+        >
+        <input
+          type="date"
+          name="deadline"
+          id="deadline"
+          x-model="deadline"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3 px-4 border"
+        />
+      </div>
+
+      <!-- Preferred Resources -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Preferred learning formats</label
+        >
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('video') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="video"
+              @change="preferredResources.includes('video') ? preferredResources = preferredResources.filter(r => r !== 'video') : preferredResources.push('video')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+            <span class="text-sm">Videos</span>
+          </label>
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('article') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="article"
+              @change="preferredResources.includes('article') ? preferredResources = preferredResources.filter(r => r !== 'article') : preferredResources.push('article')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span class="text-sm">Articles</span>
+          </label>
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('course') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="course"
+              @change="preferredResources.includes('course') ? preferredResources = preferredResources.filter(r => r !== 'course') : preferredResources.push('course')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            <span class="text-sm">Courses</span>
+          </label>
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('book') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="book"
+              @change="preferredResources.includes('book') ? preferredResources = preferredResources.filter(r => r !== 'book') : preferredResources.push('book')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            <span class="text-sm">Books</span>
+          </label>
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('interactive') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="interactive"
+              @change="preferredResources.includes('interactive') ? preferredResources = preferredResources.filter(r => r !== 'interactive') : preferredResources.push('interactive')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+              />
+            </svg>
+            <span class="text-sm">Interactive</span>
+          </label>
+          <label
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            :class="preferredResources.includes('project') ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'"
+          >
+            <input
+              type="checkbox"
+              name="preferred_resources"
+              value="project"
+              @change="preferredResources.includes('project') ? preferredResources = preferredResources.filter(r => r !== 'project') : preferredResources.push('project')"
+              class="sr-only"
+            />
+            <svg
+              class="h-5 w-5 mr-2 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+              />
+            </svg>
+            <span class="text-sm">Projects</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div
+      class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between items-center"
+    >
+      <a
+        href="{% url 'dashboard' %}"
+        class="text-sm text-gray-600 hover:text-gray-900"
+        >Cancel</a
+      >
+      <button
+        type="submit"
+        id="submit-btn"
+        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span class="btn-label inline-flex items-center">
+          <svg
+            class="-ml-1 mr-2 h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
+          Generate Roadmap with AI
+        </span>
+        <span class="btn-loading hidden items-center">
+          <svg
+            class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Generating... please wait
+        </span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Fallback script for form submission -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const submitBtn = document.getElementById("submit-btn");
+    const label = submitBtn ? submitBtn.querySelector(".btn-label") : null;
+    const loading = submitBtn ? submitBtn.querySelector(".btn-loading") : null;
+    if (!form || !submitBtn || !label || !loading) return;
+
+    // Show a helpful message when HTML5 validation prevents submission.
+    form.addEventListener(
+      "invalid",
+      function (e) {
+        e.preventDefault();
+        const target = e.target;
+        if (target && typeof target.focus === "function") {
+          target.focus();
+        }
+        // Keep button interactive.
+        submitBtn.disabled = false;
+        label.classList.remove("hidden");
+        loading.classList.add("hidden");
+        loading.classList.remove("inline-flex");
+        alert("Please fill in the required fields before generating.");
+      },
+      true
+    );
+
+    form.addEventListener("submit", function (e) {
+      // Only triggers when the browser is actually submitting the form.
+      submitBtn.disabled = true;
+      label.classList.add("hidden");
+      loading.classList.remove("hidden");
+      loading.classList.add("inline-flex");
+    });
+  });
+</script>
+{% endblock %}

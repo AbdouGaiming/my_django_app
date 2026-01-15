@@ -1,0 +1,337 @@
+{% extends 'base.html' %} {% block title %}Dashboard - RoadmapAI{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Welcome Section -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+      Welcome back, {{ user.first_name|default:user.email }}!
+    </h1>
+    <p class="mt-2 text-gray-600">
+      Continue your learning journey or start something new.
+    </p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-6 w-6 text-indigo-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+                Active Roadmaps
+              </dt>
+              <dd class="text-lg font-semibold text-gray-900">
+                {{ active_roadmaps_count|default:0 }}
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-6 w-6 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+                Completed Steps
+              </dt>
+              <dd class="text-lg font-semibold text-gray-900">
+                {{ completed_steps_count|default:0 }}
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-6 w-6 text-yellow-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+                Hours Invested
+              </dt>
+              <dd class="text-lg font-semibold text-gray-900">
+                {{ hours_invested|default:0 }}
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-6 w-6 text-purple-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+                Overall Progress
+              </dt>
+              <dd class="text-lg font-semibold text-gray-900">
+                {{ overall_progress|default:0 }}%
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Recent Roadmaps -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow rounded-lg">
+        <div
+          class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h2 class="text-lg font-semibold text-gray-900">Your Roadmaps</h2>
+          <a
+            href="{% url 'create_roadmap' %}"
+            class="text-sm text-indigo-600 hover:text-indigo-900"
+            >Create New</a
+          >
+        </div>
+        <div class="divide-y divide-gray-200">
+          {% if roadmaps %} {% for roadmap in roadmaps %}
+          <div class="px-6 py-4 hover:bg-gray-50">
+            <a href="{% url 'roadmap_detail' roadmap.id %}" class="block">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-medium text-gray-900">
+                    {{ roadmap.title }}
+                  </h3>
+                  <p class="text-sm text-gray-500">
+                    {{ roadmap.steps.count }} steps • {{
+                    roadmap.total_estimated_hours }}h estimated
+                  </p>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                    <div
+                      class="bg-indigo-600 h-2 rounded-full"
+                      style="width: {{ roadmap.progress_percentage }}%"
+                    ></div>
+                  </div>
+                  <span class="text-sm text-gray-500"
+                    >{{ roadmap.progress_percentage }}%</span
+                  >
+                </div>
+              </div>
+            </a>
+          </div>
+          {% endfor %} {% else %}
+          <div class="px-6 py-12 text-center">
+            <svg
+              class="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">
+              No roadmaps yet
+            </h3>
+            <p class="mt-1 text-sm text-gray-500">
+              Get started by creating your first learning roadmap.
+            </p>
+            <div class="mt-6">
+              <a
+                href="{% url 'create_roadmap' %}"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                <svg
+                  class="-ml-1 mr-2 h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Create Roadmap
+              </a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
+        </div>
+        <div class="p-6 space-y-4">
+          <a
+            href="{% url 'create_roadmap' %}"
+            class="flex items-center p-3 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
+          >
+            <div class="flex-shrink-0 bg-indigo-600 rounded-lg p-2">
+              <svg
+                class="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-900">
+                Create New Roadmap
+              </p>
+              <p class="text-xs text-gray-500">AI-powered learning path</p>
+            </div>
+          </a>
+
+          <a
+            href="{% url 'my_roadmaps' %}"
+            class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+          >
+            <div class="flex-shrink-0 bg-gray-600 rounded-lg p-2">
+              <svg
+                class="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-900">View All Roadmaps</p>
+              <p class="text-xs text-gray-500">Manage your learning paths</p>
+            </div>
+          </a>
+
+          <a
+            href="{% url 'profile' %}"
+            class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+          >
+            <div class="flex-shrink-0 bg-gray-600 rounded-lg p-2">
+              <svg
+                class="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-900">Edit Profile</p>
+              <p class="text-xs text-gray-500">Update your preferences</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Learning Tips -->
+      <div
+        class="bg-gradient-to-br from-indigo-500 to-purple-600 shadow rounded-lg mt-6 text-white"
+      >
+        <div class="p-6">
+          <h3 class="text-lg font-semibold mb-2">💡 Learning Tip</h3>
+          <p class="text-sm opacity-90">
+            Consistency beats intensity. Even 30 minutes of focused learning
+            daily is more effective than occasional 4-hour sessions.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

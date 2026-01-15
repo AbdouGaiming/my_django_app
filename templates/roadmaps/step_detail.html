@@ -1,0 +1,384 @@
+{% extends 'base.html' %} 
+
+{% block title %}{{ step.title }} - Step Detail{% endblock %} 
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Breadcrumb -->
+  <nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+      <li><a href="/" class="hover:text-gray-700">Home</a></li>
+      <li><span>/</span></li>
+      <li>
+        <a href="/roadmaps/{{ step.roadmap.id }}/" class="hover:text-gray-700"
+          >{{ step.roadmap.title }}</a
+        >
+      </li>
+      <li><span>/</span></li>
+      <li class="text-gray-900 font-medium">Step {{ step.sequence }}</li>
+    </ol>
+  </nav>
+
+  <!-- Step Header -->
+  <div
+    class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden"
+  >
+    <div class="p-6">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 mr-4">
+            {% if step.is_completed %}
+            <div
+              class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center"
+            >
+              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            {% else %}
+            <div
+              class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold"
+            >
+              {{ step.sequence }}
+            </div>
+            {% endif %}
+          </div>
+          <div>
+            <h1
+              class="text-2xl font-bold text-gray-900 {% if step.is_completed %}line-through text-gray-400{% endif %}"
+            >
+              {{ step.title }}
+            </h1>
+            <div class="flex items-center mt-2 text-sm text-gray-500 space-x-4">
+              <span class="flex items-center">
+                <svg
+                  class="w-4 h-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {{ step.estimated_duration }} minutes
+              </span>
+              {% if step.is_completed %}
+              <span class="flex items-center text-green-600">
+                <svg
+                  class="w-4 h-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Completed {{ step.completed_at|date:"M d, Y" }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {% if not step.is_completed %}
+          <form
+            method="POST"
+            action="{% url 'step_detail' roadmap.id step.id %}"
+          >
+            {% csrf_token %}
+            <input type="hidden" name="action" value="complete" />
+            <button
+              type="submit"
+              class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Mark Complete
+            </button>
+          </form>
+          {% else %}
+          <form
+            method="POST"
+            action="{% url 'step_detail' roadmap.id step.id %}"
+          >
+            {% csrf_token %}
+            <input type="hidden" name="action" value="uncomplete" />
+            <button
+              type="submit"
+              class="px-6 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition"
+            >
+              Mark Incomplete
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Description -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Description</h2>
+        <div class="prose max-w-none text-gray-600">
+          {{ step.description|linebreaks }}
+        </div>
+      </div>
+
+      <!-- Learning Resources -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">
+          Learning Resources
+        </h2>
+
+        {% if step.stepresource_set.all %}
+        <div class="space-y-3">
+          {% for sr in step.stepresource_set.all %}
+          <a
+            href="{{ sr.resource.url }}"
+            target="_blank"
+            class="block p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition"
+          >
+            <div class="flex items-start">
+              <div class="flex-shrink-0 mr-4">
+                <div
+                  class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+                >
+                  {% if sr.resource.resource_type == 'video' %}
+                  <span class="bg-red-100 px-2 py-1 rounded">📹</span>
+                  {% elif sr.resource.resource_type == 'article' %}
+                  <span class="bg-blue-100 px-2 py-1 rounded">📄</span>
+                  {% elif sr.resource.resource_type == 'book' %}
+                  <span class="bg-yellow-100 px-2 py-1 rounded">📚</span>
+                  {% elif sr.resource.resource_type == 'interactive' %}
+                  <span class="bg-indigo-100 px-2 py-1 rounded">🎮</span>
+                  {% else %}
+                  <span class="bg-gray-100 px-2 py-1 rounded">🔗</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center">
+                  <h3 class="font-medium text-gray-900">
+                    {{ sr.resource.title }}
+                  </h3>
+                  {% if sr.is_required %}
+                  <span
+                    class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded"
+                    >Required</span
+                  >
+                  {% endif %}
+                </div>
+                <p class="text-sm text-gray-500 mt-1">
+                  {{ sr.resource.description|truncatewords:20 }}
+                </p>
+                <div
+                  class="flex items-center mt-2 text-xs text-gray-400 space-x-4"
+                >
+                  <span>{{ sr.resource.get_difficulty_display }}</span>
+                  {% if sr.resource.estimated_duration %}
+                  <span>{{ sr.resource.estimated_duration }} min</span>
+                  {% endif %} {% if sr.resource.is_free %}
+                  <span class="text-green-600">Free</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="flex-shrink-0">
+                <svg
+                  class="w-5 h-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">
+          <p>No resources attached to this step yet.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Mastery Check -->
+      {% if step.mastery_check %}
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Mastery Check</h2>
+        <div class="bg-indigo-50 rounded-lg p-4">
+          <p class="text-indigo-800">{{ step.mastery_check }}</p>
+        </div>
+
+        {% if step.assessment %}
+        <div class="mt-4">
+          <a
+            href="/assessments/{{ step.assessment.id }}/"
+            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+          >
+            Take Assessment
+            <svg
+              class="w-4 h-4 ml-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Prerequisites -->
+      {% if step.prerequisites.count > 0 %}
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <h3 class="font-semibold text-gray-900 mb-3">Prerequisites</h3>
+        <div class="space-y-2">
+          {% for prereq in step.prerequisites.all %}
+          <a
+            href="/roadmaps/{{ step.roadmap.id }}/steps/{{ prereq.id }}/"
+            class="flex items-center p-2 rounded-md hover:bg-gray-50 transition"
+          >
+            {% if prereq.is_completed %}
+            <div
+              class="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-2"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            {% else %}
+            <div
+              class="w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-2 text-xs font-semibold"
+            >
+              {{ prereq.sequence }}
+            </div>
+            {% endif %}
+            <span
+              class="text-sm {% if prereq.is_completed %}text-gray-400 line-through{% else %}text-gray-700{% endif %}"
+            >
+              {{ prereq.title }}
+            </span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Navigation -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <h3 class="font-semibold text-gray-900 mb-3">Navigation</h3>
+        <div class="space-y-2">
+          {% if previous_step %}
+          <a
+            href="/roadmaps/{{ step.roadmap.id }}/steps/{{ previous_step.id }}/"
+            class="flex items-center p-2 rounded-md border border-gray-200 hover:bg-gray-50 transition"
+          >
+            <svg
+              class="w-5 h-5 mr-2 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            <span class="text-sm text-gray-700">{{ previous_step.title }}</span>
+          </a>
+          {% endif %} {% if next_step %}
+          <a
+            href="/roadmaps/{{ step.roadmap.id }}/steps/{{ next_step.id }}/"
+            class="flex items-center justify-between p-2 rounded-md border border-gray-200 hover:bg-gray-50 transition"
+          >
+            <span class="text-sm text-gray-700">{{ next_step.title }}</span>
+            <svg
+              class="w-5 h-5 ml-2 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Notes (Optional) -->
+      <div
+        class="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+        x-data="{ notes: '' }"
+      >
+        <h3 class="font-semibold text-gray-900 mb-3">My Notes</h3>
+        <textarea
+          x-model="notes"
+          rows="4"
+          placeholder="Add personal notes for this step..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+        ></textarea>
+        <button
+          class="mt-2 w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition text-sm"
+        >
+          Save Notes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

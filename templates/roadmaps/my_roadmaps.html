@@ -1,0 +1,235 @@
+{% extends 'base.html' %} {% block title %}My Roadmaps - RoadmapAI{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="md:flex md:items-center md:justify-between mb-8">
+    <div class="flex-1 min-w-0">
+      <h1
+        class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
+      >
+        My Roadmaps
+      </h1>
+      <p class="mt-1 text-gray-500">Manage and track your learning paths</p>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4">
+      <a
+        href="{% url 'create_roadmap' %}"
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        <svg
+          class="-ml-1 mr-2 h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          />
+        </svg>
+        Create New Roadmap
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-8">
+      <a
+        href="?status=all"
+        class="{% if status == 'all' or not status %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+      >
+        All
+      </a>
+      <a
+        href="?status=active"
+        class="{% if status == 'active' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+      >
+        Active
+      </a>
+      <a
+        href="?status=completed"
+        class="{% if status == 'completed' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+      >
+        Completed
+      </a>
+      <a
+        href="?status=archived"
+        class="{% if status == 'archived' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+      >
+        Archived
+      </a>
+    </nav>
+  </div>
+
+  <!-- Roadmaps Grid -->
+  {% if roadmaps %}
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for roadmap in roadmaps %}
+    <div
+      class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
+    >
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if roadmap.status == 'active' %}bg-green-100 text-green-800 {% elif roadmap.status == 'completed' %}bg-blue-100 text-blue-800 {% elif roadmap.status == 'draft' %}bg-yellow-100 text-yellow-800 {% else %}bg-gray-100 text-gray-800{% endif %}"
+          >
+            {{ roadmap.get_status_display }}
+          </span>
+          <div class="relative" x-data="{ open: false }">
+            <button
+              @click="open = !open"
+              class="text-gray-400 hover:text-gray-600"
+            >
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+                />
+              </svg>
+            </button>
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-cloak
+              class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+            >
+              <div class="py-1">
+                <a
+                  href="{% url 'roadmap_detail' roadmap.id %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >View Details</a
+                >
+                <a
+                  href="#"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >Delete</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'roadmap_detail' roadmap.id %}">
+          <h3 class="text-lg font-medium text-gray-900 hover:text-indigo-600">
+            {{ roadmap.title }}
+          </h3>
+        </a>
+        <p class="mt-1 text-sm text-gray-500 line-clamp-2">
+          {{ roadmap.description|truncatewords:20 }}
+        </p>
+
+        <div class="mt-4">
+          <div
+            class="flex items-center justify-between text-sm text-gray-500 mb-2"
+          >
+            <span>Progress</span>
+            <span>{{ roadmap.progress_percentage }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div
+              class="bg-indigo-600 h-2 rounded-full transition-all"
+              style="width: {{ roadmap.progress_percentage }}%"
+            ></div>
+          </div>
+        </div>
+
+        <div
+          class="mt-4 flex items-center justify-between text-sm text-gray-500"
+        >
+          <div class="flex items-center">
+            <svg
+              class="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            {{ roadmap.total_estimated_hours }}h
+          </div>
+          <div class="flex items-center">
+            <svg
+              class="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            {{ roadmap.steps.count }} steps
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-6 py-3">
+        <a
+          href="{% url 'roadmap_detail' roadmap.id %}"
+          class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+        >
+          Continue Learning →
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Empty State -->
+  <div class="text-center py-12 bg-white rounded-lg shadow">
+    <svg
+      class="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">No roadmaps</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      Get started by creating your first learning roadmap.
+    </p>
+    <div class="mt-6">
+      <a
+        href="{% url 'create_roadmap' %}"
+        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        <svg
+          class="-ml-1 mr-2 h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          />
+        </svg>
+        Create Your First Roadmap
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
