@@ -7,12 +7,14 @@
 ## 🚀 Recommended Hosting Platforms
 
 ### 1. **Railway** (Recommended - Easiest)
+
 - Free tier available
 - Automatic deployments from Git
 - Built-in PostgreSQL database
 - Environment variables management
 
 **Steps:**
+
 1. Go to [railway.app](https://railway.app)
 2. Connect your GitHub repository
 3. Add PostgreSQL service
@@ -20,16 +22,19 @@
 5. Deploy automatically
 
 ### 2. **Render**
+
 - Free tier available
 - Easy setup
 - Free PostgreSQL database
 
 ### 3. **Heroku**
+
 - Popular choice
 - Easy deployment
 - Add-ons available
 
 ### 4. **PythonAnywhere**
+
 - Python-specific hosting
 - Free tier for learning projects
 
@@ -59,6 +64,7 @@ CSRF_TRUSTED_ORIGINS=https://your-domain.com
 ## 🔧 Deployment Commands
 
 The platform will automatically run:
+
 ```bash
 python manage.py migrate
 python manage.py collectstatic --noinput
@@ -68,17 +74,20 @@ gunicorn my_site.wsgi
 ## 🗄️ Database
 
 For production, switch from SQLite to PostgreSQL:
+
 - Railway/Render provide free PostgreSQL
 - Automatically configured via DATABASE_URL
 
 ## 📝 After Deployment
 
 1. Create a superuser:
+
    ```bash
    python manage.py createsuperuser
    ```
 
 2. Access admin panel:
+
    ```
    https://your-domain.com/admin/
    ```
@@ -101,6 +110,7 @@ For production, switch from SQLite to PostgreSQL:
 ## 📱 Frontend Deployment
 
 If you have a separate frontend (React, Vue, etc.):
+
 1. Deploy frontend to **Netlify** or **Vercel**
 2. Deploy Django backend to **Railway** or **Render**
 3. Update CORS_ALLOWED_ORIGINS with frontend URL
@@ -109,14 +119,17 @@ If you have a separate frontend (React, Vue, etc.):
 ## 🆘 Troubleshooting
 
 **Static files not loading:**
+
 - Run `python manage.py collectstatic`
 - Check STATIC_ROOT and STATIC_URL settings
 
 **Database errors:**
+
 - Ensure DATABASE_URL is set correctly
 - Run migrations: `python manage.py migrate`
 
 **API errors:**
+
 - Check ALLOWED_HOSTS includes your domain
 - Verify CORS settings
 - Check GROQ_API_KEY is set
@@ -124,6 +137,7 @@ If you have a separate frontend (React, Vue, etc.):
 ## 📞 Support
 
 For deployment issues, check:
+
 - Railway Docs: https://docs.railway.app
 - Render Docs: https://render.com/docs
 - Django Deployment Checklist: https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/

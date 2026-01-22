@@ -1,281 +1,340 @@
-{% extends 'base.html' %}
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block content %}
-<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-6" 
-     dir="{% if language == 'ar' or language == 'ar_dz' %}rtl{% else %}ltr{% endif %}">
-    <div class="max-w-2xl mx-auto px-4">
-        
-        <!-- Progress Header -->
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-600">
-                    {% if language == 'ar' or language == 'ar_dz' %}
-                        الخطوة {{ current_step }} من {{ total_steps }}
-                    {% elif language == 'fr' %}
-                        Étape {{ current_step }} sur {{ total_steps }}
-                    {% else %}
-                        Step {{ current_step }} of {{ total_steps }}
-                    {% endif %}
-                </span>
-                <span class="text-sm text-green-600 font-medium">
-                    {{ progress_percent }}%
-                </span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500" 
-                     style="width: {{ progress_percent }}%"></div>
-            </div>
-        </div>
-
-        <!-- Main Card -->
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-            
-            <!-- Step Header -->
-            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-5 text-white">
-                <h1 class="text-xl font-bold">
-                    {% if step_type == 'subject' %}
-                        {% if language == 'ar' or language == 'ar_dz' %}ماذا تريد أن تتعلم؟
-                        {% elif language == 'fr' %}Que voulez-vous apprendre ?
-                        {% else %}What do you want to learn?{% endif %}
-                    {% elif step_type == 'questions' %}
-                        {% if language == 'ar' or language == 'ar_dz' %}أسئلة لفهمك أفضل
-                        {% elif language == 'fr' %}Questions pour mieux vous connaître
-                        {% else %}Questions to understand you better{% endif %}
-                    {% elif step_type == 'market' %}
-                        {% if language == 'ar' or language == 'ar_dz' %}سوق العمل في الجزائر
-                        {% elif language == 'fr' %}Marché du travail en Algérie
-                        {% else %}Job Market in Algeria{% endif %}
-                    {% endif %}
-                </h1>
-                <p class="text-green-100 mt-1 text-sm">
-                    {% if language == 'ar' or language == 'ar_dz' %}
-                        إجاباتك تساعدنا في تخصيص خطة التعلم لك
-                    {% elif language == 'fr' %}
-                        Vos réponses nous aident à personnaliser votre parcours
-                    {% else %}
-                        Your answers help us customize your learning plan
-                    {% endif %}
-                </p>
-            </div>
-
-            <!-- Form Content -->
-            <form method="POST" action="" class="p-6">
-                {% csrf_token %}
-                <input type="hidden" name="step" value="{{ current_step }}">
-                
-                {% if step_type == 'subject' %}
-                <!-- Subject Selection -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-700 mb-4">
-                        {% if language == 'ar' or language == 'ar_dz' %}اختر المجال الذي يهمك:
-                        {% elif language == 'fr' %}Choisissez le domaine qui vous intéresse:
-                        {% else %}Choose the field that interests you:{% endif %}
-                    </h3>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                           {% for subject in subjects %}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="subject" value="{{ subject.value }}" 
-                                class="sr-only peer" {% if subject.value == selected_subject %}checked{% endif %}>
-                            <div class="border-2 border-gray-200 rounded-xl p-4 text-center
-                                        hover:border-green-400 hover:bg-green-50
-                                        peer-checked:border-green-500 peer-checked:bg-green-50
-                                        transition-all duration-200">
-                                <div class="text-3xl mb-2">{{ subject.icon }}</div>
-                                <span class="font-medium text-gray-800 block">{{ subject.label }}</span>
-                                <span class="text-xs text-green-600">
-                                    {% if subject.jobs > 0 %}
-                                        {{ subject.jobs }} 
-                                        {% if language == 'ar' or language == 'ar_dz' %}فرصة عمل
-                                        {% elif language == 'fr' %}emplois
-                                        {% else %}jobs{% endif %}
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                    
-                    <!-- Custom Subject -->
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            {% if language == 'ar' or language == 'ar_dz' %}أو اكتب موضوعاً آخر:
-                            {% elif language == 'fr' %}Ou entrez un autre sujet:
-                            {% else %}Or enter another topic:{% endif %}
-                        </label>
-                           <input type="text" name="custom_subject" value="{{ custom_subject_value }}"
-                               placeholder="{% if language == 'ar' or language == 'ar_dz' %}مثال: React Native, DevOps...{% elif language == 'fr' %}Ex: React Native, DevOps...{% else %}e.g., React Native, DevOps...{% endif %}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    </div>
-                </div>
-                
-                {% elif step_type == 'questions' %}
-                <!-- Clarifying Questions -->
-                <div class="space-y-6">
-                    {% for question in questions %}
-                    <div class="border-b border-gray-100 pb-6 {% if not forloop.last %}mb-6{% endif %}">
-                        <h3 class="text-lg font-medium text-gray-800 mb-4">
-                            {{ forloop.counter }}. {{ question.text }}
-                        </h3>
-                        
-                        {% if question.type == 'single_choice' or question.type == 'yes_no' %}
-                        <div class="space-y-2">
-                            {% for option in question.options %}
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer
-                                          hover:border-green-400 hover:bg-green-50 transition-all">
-                                <input type="radio" name="q_{{ question.id }}" value="{{ option.value }}"
-                                       class="w-4 h-4 text-green-600 focus:ring-green-500">
-                                <span class="ml-3 text-gray-700">{{ option.label }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                        
-                        {% elif question.type == 'multiple_choice' %}
-                        <div class="space-y-2">
-                            {% for option in question.options %}
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer
-                                          hover:border-green-400 hover:bg-green-50 transition-all">
-                                <input type="checkbox" name="q_{{ question.id }}" value="{{ option.value }}"
-                                       class="w-4 h-4 text-green-600 focus:ring-green-500 rounded">
-                                <span class="ml-3 text-gray-700">{{ option.label }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                        
-                        {% elif question.type == 'text' %}
-                        <textarea name="q_{{ question.id }}" rows="3"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500"
-                                  placeholder="{% if language == 'ar' or language == 'ar_dz' %}اكتب إجابتك هنا...{% elif language == 'fr' %}Écrivez votre réponse ici...{% else %}Write your answer here...{% endif %}"></textarea>
-                        
-                        {% elif question.type == 'scale' %}
-                        <div class="flex justify-between items-center gap-2">
-                            {% for i in '12345678910'|make_list %}
-                            <label class="flex-1">
-                                <input type="radio" name="q_{{ question.id }}" value="{{ forloop.counter }}" class="sr-only peer">
-                                <div class="w-full py-2 text-center border border-gray-200 rounded-lg cursor-pointer
-                                            hover:border-green-400 peer-checked:bg-green-500 peer-checked:text-white
-                                            peer-checked:border-green-500 transition-all text-sm">
-                                    {{ forloop.counter }}
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                
-                {% elif step_type == 'market' %}
-                <!-- Market Insights -->
-                <div class="space-y-6">
-                    {% if market_insights %}
-                    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">
-                            📊 {{ market_insights.subject }}
-                        </h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div class="bg-white p-3 rounded-lg">
-                                <span class="text-gray-500 block">
-                                    {% if language == 'ar' or language == 'ar_dz' %}مستوى الطلب{% elif language == 'fr' %}Niveau de demande{% else %}Demand Level{% endif %}
-                                </span>
-                                <span class="font-bold text-green-600">{{ market_insights.demand_level }}</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <span class="text-gray-500 block">
-                                    {% if language == 'ar' or language == 'ar_dz' %}الاتجاه{% elif language == 'fr' %}Tendance{% else %}Trend{% endif %}
-                                </span>
-                                <span class="font-bold">{{ market_insights.growth_text }}</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <span class="text-gray-500 block">
-                                    {% if language == 'ar' or language == 'ar_dz' %}فرص العمل{% elif language == 'fr' %}Opportunités{% else %}Job Opportunities{% endif %}
-                                </span>
-                                <span class="font-bold text-blue-600">{{ market_insights.job_count }}</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <span class="text-gray-500 block">
-                                    {% if language == 'ar' or language == 'ar_dz' %}متوسط الراتب{% elif language == 'fr' %}Salaire moyen{% else %}Average Salary{% endif %}
-                                </span>
-                                <span class="font-bold text-gray-700">{{ market_insights.average_salary }}</span>
-                            </div>
-                        </div>
-                        <p class="mt-4 text-gray-600 text-sm">{{ market_insights.message }}</p>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Companies Section -->
-                    {% if matching_companies %}
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-800 mb-3">
-                            🏢 
-                            {% if language == 'ar' or language == 'ar_dz' %}شركات توظف في هذا المجال
-                            {% elif language == 'fr' %}Entreprises qui recrutent
-                            {% else %}Companies Hiring{% endif %}
-                        </h3>
-                        <div class="space-y-3">
-                            {% for company in matching_companies %}
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <span class="font-medium text-gray-800">{{ company.name }}</span>
-                                    <span class="text-xs text-gray-500 block">{{ company.industry }}</span>
-                                </div>
-                                {% if company.is_hiring %}
-                                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                    {% if language == 'ar' or language == 'ar_dz' %}يوظف{% elif language == 'fr' %}Recrute{% else %}Hiring{% endif %}
-                                </span>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Navigation Buttons -->
-                <div class="flex justify-between mt-8 pt-6 border-t border-gray-100">
-                    {% if current_step > 1 %}
-                    <a href="?step={{ current_step|add:'-1' }}" 
-                       class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl
-                              hover:bg-gray-50 transition-all flex items-center gap-2">
-                        <svg class="w-5 h-5 {% if language == 'ar' or language == 'ar_dz' %}rotate-180{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        {% if language == 'ar' or language == 'ar_dz' %}السابق{% elif language == 'fr' %}Précédent{% else %}Previous{% endif %}
-                    </a>
-                    {% else %}
-                    <div></div>
-                    {% endif %}
-                    
-                    <button type="submit" 
-                            class="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white 
-                                   font-bold rounded-xl hover:from-green-600 hover:to-green-700 
-                                   transition-all flex items-center gap-2 shadow-lg">
-                        {% if current_step == total_steps %}
-                            {% if language == 'ar' or language == 'ar_dz' %}إنشاء خطة التعلم 🚀{% elif language == 'fr' %}Créer mon parcours 🚀{% else %}Create My Roadmap 🚀{% endif %}
-                        {% else %}
-                            {% if language == 'ar' or language == 'ar_dz' %}التالي{% elif language == 'fr' %}Suivant{% else %}Next{% endif %}
-                            <svg class="w-5 h-5 {% if language == 'ar' or language == 'ar_dz' %}rotate-180{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        {% endif %}
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Help Text -->
-        <div class="text-center mt-6 text-sm text-gray-500">
-            {% if language == 'ar' or language == 'ar_dz' %}
-                💡 يمكنك تغيير إجاباتك لاحقاً من إعدادات الملف الشخصي
-            {% elif language == 'fr' %}
-                💡 Vous pouvez modifier vos réponses plus tard dans les paramètres
-            {% else %}
-                💡 You can change your answers later in profile settings
-            {% endif %}
-        </div>
-        
+{% extends 'base.html' %} {% block title %}{{ page_title }}{% endblock %} {%
+block content %}
+<div
+  class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-6"
+  dir="{% if language == 'ar' or language == 'ar_dz' %}rtl{% else %}ltr{% endif %}"
+>
+  <div class="max-w-2xl mx-auto px-4">
+    <!-- Progress Header -->
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-600">
+          {% if language == 'ar' or language == 'ar_dz' %} الخطوة {{
+          current_step }} من {{ total_steps }} {% elif language == 'fr' %} Étape
+          {{ current_step }} sur {{ total_steps }} {% else %} Step {{
+          current_step }} of {{ total_steps }} {% endif %}
+        </span>
+        <span class="text-sm text-green-600 font-medium">
+          {{ progress_percent }}%
+        </span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div
+          class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500"
+          style="width: {{ progress_percent }}%"
+        ></div>
+      </div>
     </div>
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <!-- Step Header -->
+      <div
+        class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-5 text-white"
+      >
+        <h1 class="text-xl font-bold">
+          {% if step_type == 'subject' %} {% if language == 'ar' or language ==
+          'ar_dz' %}ماذا تريد أن تتعلم؟ {% elif language == 'fr' %}Que
+          voulez-vous apprendre ? {% else %}What do you want to learn?{% endif
+          %} {% elif step_type == 'questions' %} {% if language == 'ar' or
+          language == 'ar_dz' %}أسئلة لفهمك أفضل {% elif language == 'fr'
+          %}Questions pour mieux vous connaître {% else %}Questions to
+          understand you better{% endif %} {% elif step_type == 'market' %} {%
+          if language == 'ar' or language == 'ar_dz' %}سوق العمل في الجزائر {%
+          elif language == 'fr' %}Marché du travail en Algérie {% else %}Job
+          Market in Algeria{% endif %} {% endif %}
+        </h1>
+        <p class="text-green-100 mt-1 text-sm">
+          {% if language == 'ar' or language == 'ar_dz' %} إجاباتك تساعدنا في
+          تخصيص خطة التعلم لك {% elif language == 'fr' %} Vos réponses nous
+          aident à personnaliser votre parcours {% else %} Your answers help us
+          customize your learning plan {% endif %}
+        </p>
+      </div>
+
+      <!-- Form Content -->
+      <form method="POST" action="" class="p-6">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="{{ current_step }}" />
+
+        {% if step_type == 'subject' %}
+        <!-- Subject Selection -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-medium text-gray-700 mb-4">
+            {% if language == 'ar' or language == 'ar_dz' %}اختر المجال الذي
+            يهمك: {% elif language == 'fr' %}Choisissez le domaine qui vous
+            intéresse: {% else %}Choose the field that interests you:{% endif %}
+          </h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            {% for subject in subjects %}
+            <label class="cursor-pointer">
+              <input type="radio" name="subject" value="{{ subject.value }}"
+              class="sr-only peer" {% if subject.value == selected_subject
+              %}checked{% endif %}>
+              <div
+                class="border-2 border-gray-200 rounded-xl p-4 text-center hover:border-green-400 hover:bg-green-50 peer-checked:border-green-500 peer-checked:bg-green-50 transition-all duration-200"
+              >
+                <div class="text-3xl mb-2">{{ subject.icon }}</div>
+                <span class="font-medium text-gray-800 block"
+                  >{{ subject.label }}</span
+                >
+                <span class="text-xs text-green-600">
+                  {% if subject.jobs > 0 %} {{ subject.jobs }} {% if language ==
+                  'ar' or language == 'ar_dz' %}فرصة عمل {% elif language ==
+                  'fr' %}emplois {% else %}jobs{% endif %} {% endif %}
+                </span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+
+          <!-- Custom Subject -->
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {% if language == 'ar' or language == 'ar_dz' %}أو اكتب موضوعاً
+              آخر: {% elif language == 'fr' %}Ou entrez un autre sujet: {% else
+              %}Or enter another topic:{% endif %}
+            </label>
+            <input
+              type="text"
+              name="custom_subject"
+              value="{{ custom_subject_value }}"
+              placeholder="{% if language == 'ar' or language == 'ar_dz' %}مثال: React Native, DevOps...{% elif language == 'fr' %}Ex: React Native, DevOps...{% else %}e.g., React Native, DevOps...{% endif %}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+        </div>
+
+        {% elif step_type == 'questions' %}
+        <!-- Clarifying Questions -->
+        <div class="space-y-6">
+          {% for question in questions %}
+          <div
+            class="border-b border-gray-100 pb-6 {% if not forloop.last %}mb-6{% endif %}"
+          >
+            <h3 class="text-lg font-medium text-gray-800 mb-4">
+              {{ forloop.counter }}. {{ question.text }}
+            </h3>
+
+            {% if question.type == 'single_choice' or question.type == 'yes_no'
+            %}
+            <div class="space-y-2">
+              {% for option in question.options %}
+              <label
+                class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-all"
+              >
+                <input
+                  type="radio"
+                  name="q_{{ question.id }}"
+                  value="{{ option.value }}"
+                  class="w-4 h-4 text-green-600 focus:ring-green-500"
+                />
+                <span class="ml-3 text-gray-700">{{ option.label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+
+            {% elif question.type == 'multiple_choice' %}
+            <div class="space-y-2">
+              {% for option in question.options %}
+              <label
+                class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-all"
+              >
+                <input
+                  type="checkbox"
+                  name="q_{{ question.id }}"
+                  value="{{ option.value }}"
+                  class="w-4 h-4 text-green-600 focus:ring-green-500 rounded"
+                />
+                <span class="ml-3 text-gray-700">{{ option.label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+
+            {% elif question.type == 'text' %}
+            <textarea
+              name="q_{{ question.id }}"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500"
+              placeholder="{% if language == 'ar' or language == 'ar_dz' %}اكتب إجابتك هنا...{% elif language == 'fr' %}Écrivez votre réponse ici...{% else %}Write your answer here...{% endif %}"
+            ></textarea>
+
+            {% elif question.type == 'scale' %}
+            <div class="flex justify-between items-center gap-2">
+              {% for i in '12345678910'|make_list %}
+              <label class="flex-1">
+                <input
+                  type="radio"
+                  name="q_{{ question.id }}"
+                  value="{{ forloop.counter }}"
+                  class="sr-only peer"
+                />
+                <div
+                  class="w-full py-2 text-center border border-gray-200 rounded-lg cursor-pointer hover:border-green-400 peer-checked:bg-green-500 peer-checked:text-white peer-checked:border-green-500 transition-all text-sm"
+                >
+                  {{ forloop.counter }}
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        {% elif step_type == 'market' %}
+        <!-- Market Insights -->
+        <div class="space-y-6">
+          {% if market_insights %}
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">
+              📊 {{ market_insights.subject }}
+            </h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="bg-white p-3 rounded-lg">
+                <span class="text-gray-500 block">
+                  {% if language == 'ar' or language == 'ar_dz' %}مستوى الطلب{%
+                  elif language == 'fr' %}Niveau de demande{% else %}Demand
+                  Level{% endif %}
+                </span>
+                <span class="font-bold text-green-600"
+                  >{{ market_insights.demand_level }}</span
+                >
+              </div>
+              <div class="bg-white p-3 rounded-lg">
+                <span class="text-gray-500 block">
+                  {% if language == 'ar' or language == 'ar_dz' %}الاتجاه{% elif
+                  language == 'fr' %}Tendance{% else %}Trend{% endif %}
+                </span>
+                <span class="font-bold">{{ market_insights.growth_text }}</span>
+              </div>
+              <div class="bg-white p-3 rounded-lg">
+                <span class="text-gray-500 block">
+                  {% if language == 'ar' or language == 'ar_dz' %}فرص العمل{%
+                  elif language == 'fr' %}Opportunités{% else %}Job
+                  Opportunities{% endif %}
+                </span>
+                <span class="font-bold text-blue-600"
+                  >{{ market_insights.job_count }}</span
+                >
+              </div>
+              <div class="bg-white p-3 rounded-lg">
+                <span class="text-gray-500 block">
+                  {% if language == 'ar' or language == 'ar_dz' %}متوسط الراتب{%
+                  elif language == 'fr' %}Salaire moyen{% else %}Average
+                  Salary{% endif %}
+                </span>
+                <span class="font-bold text-gray-700"
+                  >{{ market_insights.average_salary }}</span
+                >
+              </div>
+            </div>
+            <p class="mt-4 text-gray-600 text-sm">
+              {{ market_insights.message }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Companies Section -->
+          {% if matching_companies %}
+          <div>
+            <h3 class="text-lg font-medium text-gray-800 mb-3">
+              🏢 {% if language == 'ar' or language == 'ar_dz' %}شركات توظف في
+              هذا المجال {% elif language == 'fr' %}Entreprises qui recrutent {%
+              else %}Companies Hiring{% endif %}
+            </h3>
+            <div class="space-y-3">
+              {% for company in matching_companies %}
+              <div
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div>
+                  <span class="font-medium text-gray-800"
+                    >{{ company.name }}</span
+                  >
+                  <span class="text-xs text-gray-500 block"
+                    >{{ company.industry }}</span
+                  >
+                </div>
+                {% if company.is_hiring %}
+                <span
+                  class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                >
+                  {% if language == 'ar' or language == 'ar_dz' %}يوظف{% elif
+                  language == 'fr' %}Recrute{% else %}Hiring{% endif %}
+                </span>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-100">
+          {% if current_step > 1 %}
+          <a
+            href="?step={{ current_step|add:'-1' }}"
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5 {% if language == 'ar' or language == 'ar_dz' %}rotate-180{% endif %}"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            {% if language == 'ar' or language == 'ar_dz' %}السابق{% elif
+            language == 'fr' %}Précédent{% else %}Previous{% endif %}
+          </a>
+          {% else %}
+          <div></div>
+          {% endif %}
+
+          <button
+            type="submit"
+            class="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2 shadow-lg"
+          >
+            {% if current_step == total_steps %} {% if language == 'ar' or
+            language == 'ar_dz' %}إنشاء خطة التعلم 🚀{% elif language == 'fr'
+            %}Créer mon parcours 🚀{% else %}Create My Roadmap 🚀{% endif %} {%
+            else %} {% if language == 'ar' or language == 'ar_dz' %}التالي{%
+            elif language == 'fr' %}Suivant{% else %}Next{% endif %}
+            <svg
+              class="w-5 h-5 {% if language == 'ar' or language == 'ar_dz' %}rotate-180{% endif %}"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+            {% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Help Text -->
+    <div class="text-center mt-6 text-sm text-gray-500">
+      {% if language == 'ar' or language == 'ar_dz' %} 💡 يمكنك تغيير إجاباتك
+      لاحقاً من إعدادات الملف الشخصي {% elif language == 'fr' %} 💡 Vous pouvez
+      modifier vos réponses plus tard dans les paramètres {% else %} 💡 You can
+      change your answers later in profile settings {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

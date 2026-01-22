@@ -31,28 +31,33 @@ AI-powered personalized learning roadmap generator designed for the Algerian mar
 ### Setup
 
 1. Clone the repository:
+
 ```bash
 git clone <your-repo-url>
 cd my_django_app
 ```
 
 2. Create virtual environment:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Create .env file:
+
 ```bash
 cp .env.example .env
 ```
 
 5. Update .env with your keys:
+
 ```
 SECRET_KEY=your-secret-key
 DEBUG=True
@@ -60,16 +65,19 @@ GROQ_API_KEY=your-groq-api-key
 ```
 
 6. Run migrations:
+
 ```bash
 python manage.py migrate
 ```
 
 7. Create superuser:
+
 ```bash
 python manage.py createsuperuser
 ```
 
 8. Run development server:
+
 ```bash
 python manage.py runserver
 ```
