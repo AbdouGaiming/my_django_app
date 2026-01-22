@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% block title %}{{ roadmap.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" dir="{{ 'rtl' if language in ['ar', 'ar_dz'] else 'ltr' }}">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Roadmap Header -->
+        <div class="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-6 text-white">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 class="text-2xl font-bold">{{ roadmap.title }}</h1>
+                        <p class="mt-1 text-green-100">{{ roadmap.description }}</p>
+                    </div>
+                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                        {{ roadmap.get_status_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">
+                        {% if language in ['ar', 'ar_dz'] %}التقدم الكلي{% elif language == 'fr' %}Progression globale{% else %}Overall Progress{% endif %}
+                    </span>
+                    <span class="text-sm text-gray-500">{{ progress_percent }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all" 
+                         style="width: {{ progress_percent }}%"></div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="px-6 py-4 bg-gray-50 border-t grid grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ total_steps }}</div>
+                    <div class="text-xs text-gray-500">
+                        {% if language in ['ar', 'ar_dz'] %}خطوة{% elif language == 'fr' %}Étapes{% else %}Steps{% endif %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">{{ completed_steps }}</div>
+                    <div class="text-xs text-gray-500">
+                        {% if language in ['ar', 'ar_dz'] %}مكتملة{% elif language == 'fr' %}Terminées{% else %}Done{% endif %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600">{{ total_hours }}h</div>
+                    <div class="text-xs text-gray-500">
+                        {% if language in ['ar', 'ar_dz'] %}ساعة{% elif language == 'fr' %}Heures{% else %}Hours{% endif %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ weeks_estimate }}</div>
+                    <div class="text-xs text-gray-500">
+                        {% if language in ['ar', 'ar_dz'] %}أسبوع{% elif language == 'fr' %}Semaines{% else %}Weeks{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Steps Column -->
+            <div class="lg:col-span-2 space-y-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    📚 
+                    {% if language in ['ar', 'ar_dz'] %}خطوات التعلم{% elif language == 'fr' %}Étapes d'apprentissage{% else %}Learning Steps{% endif %}
+                </h2>
+
+                {% for step in steps %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden 
+                            hover:shadow-md transition-all" id="step-{{ step.id }}">
+                    <div class="p-4">
+                        <div class="flex items-start gap-4">
+                            <!-- Step Number -->
+                            <div class="flex-shrink-0">
+                                {% if step.status == 'completed' %}
+                                <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                    ✓
+                                </div>
+                                {% elif step.status == 'active' %}
+                                <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold animate-pulse">
+                                    {{ step.sequence }}
+                                </div>
+                                {% else %}
+                                <div class="w-10 h-10 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center font-bold">
+                                    {{ step.sequence }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Step Content -->
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-800">{{ step.title }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">{{ step.description }}</p>
+                                
+                                <!-- Time & Status -->
+                                <div class="flex items-center gap-4 mt-3 text-sm">
+                                    <span class="text-gray-500">
+                                        ⏱️ {{ step.estimated_hours }}h
+                                    </span>
+                                    {% if step.market_info %}
+                                    <span class="text-green-600 text-xs bg-green-50 px-2 py-1 rounded-full">
+                                        {{ step.market_info.demand_text }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Objectives -->
+                                {% if step.objectives %}
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <span class="text-xs font-medium text-gray-500">
+                                        {% if language in ['ar', 'ar_dz'] %}الأهداف{% elif language == 'fr' %}Objectifs{% else %}Objectives{% endif %}:
+                                    </span>
+                                    <ul class="mt-1 text-sm text-gray-600 list-disc list-inside">
+                                        {% for obj in step.objectives %}
+                                        <li>{{ obj }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+
+                                <!-- Resources for this step -->
+                                {% if step.resources %}
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <span class="text-xs font-medium text-gray-500">
+                                        🎥 
+                                        {% if language in ['ar', 'ar_dz'] %}مصادر التعلم{% elif language == 'fr' %}Ressources{% else %}Resources{% endif %}:
+                                    </span>
+                                    <div class="mt-2 space-y-2">
+                                        {% for resource in step.resources %}
+                                        <a href="{{ resource.url }}" target="_blank" 
+                                           class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800">
+                                            {% if resource.type == 'youtube_playlist' %}🎬{% elif resource.type == 'book' %}📖{% else %}📄{% endif %}
+                                            {{ resource.title }}
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Action Button -->
+                            <div class="flex-shrink-0">
+                                {% if step.status == 'active' %}
+                                <form method="POST" action="{% url 'roadmaps:complete_step' step.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg
+                                                   hover:bg-green-600 transition-all">
+                                        {% if language in ['ar', 'ar_dz'] %}إنهاء{% elif language == 'fr' %}Terminer{% else %}Complete{% endif %}
+                                    </button>
+                                </form>
+                                {% elif step.status == 'completed' %}
+                                <span class="text-green-600 text-sm font-medium">✓</span>
+                                {% else %}
+                                <span class="text-gray-400 text-sm">🔒</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                
+                <!-- Market Insights Card -->
+                {% if market_insights %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        📊 
+                        {% if language in ['ar', 'ar_dz'] %}سوق العمل{% elif language == 'fr' %}Marché{% else %}Job Market{% endif %}
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm text-gray-600">
+                                {% if language in ['ar', 'ar_dz'] %}الطلب{% elif language == 'fr' %}Demande{% else %}Demand{% endif %}
+                            </span>
+                            <span class="font-bold text-green-600">{{ market_insights.demand_level }}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                            <span class="text-sm text-gray-600">
+                                {% if language in ['ar', 'ar_dz'] %}فرص العمل{% elif language == 'fr' %}Emplois{% else %}Jobs{% endif %}
+                            </span>
+                            <span class="font-bold text-blue-600">{{ market_insights.job_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                            <span class="text-sm text-gray-600">
+                                {% if language in ['ar', 'ar_dz'] %}الراتب{% elif language == 'fr' %}Salaire{% else %}Salary{% endif %}
+                            </span>
+                            <span class="font-bold text-purple-600 text-sm">{{ market_insights.average_salary }}</span>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-600">{{ market_insights.message }}</p>
+                </div>
+                {% endif %}
+
+                <!-- YouTube Resources -->
+                {% if youtube_playlists %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        🎥 
+                        {% if language in ['ar', 'ar_dz'] %}قوائم يوتيوب موصى بها{% elif language == 'fr' %}Playlists YouTube{% else %}Recommended Playlists{% endif %}
+                    </h3>
+                    <div class="space-y-3">
+                        {% for playlist in youtube_playlists %}
+                        <a href="{{ playlist.url }}" target="_blank" 
+                           class="block p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-all">
+                            <div class="flex items-start gap-3">
+                                <div class="text-2xl">▶️</div>
+                                <div class="flex-1">
+                                    <span class="font-medium text-gray-800 block text-sm">
+                                        {{ playlist.title_ar|default:playlist.title }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">
+                                        {{ playlist.channel_name }} • {{ playlist.video_count }} 
+                                        {% if language in ['ar', 'ar_dz'] %}فيديو{% elif language == 'fr' %}vidéos{% else %}videos{% endif %}
+                                    </span>
+                                    <span class="text-xs bg-{{ playlist.language }}-100 text-{{ playlist.language }}-700 px-2 py-0.5 rounded mt-1 inline-block">
+                                        {% if playlist.language == 'ar' %}عربي{% elif playlist.language == 'fr' %}Français{% else %}English{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Books -->
+                {% if books %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        📚 
+                        {% if language in ['ar', 'ar_dz'] %}كتب موصى بها{% elif language == 'fr' %}Livres recommandés{% else %}Recommended Books{% endif %}
+                    </h3>
+                    <div class="space-y-3">
+                        {% for book in books %}
+                        <div class="p-3 bg-amber-50 rounded-lg">
+                            <span class="font-medium text-gray-800 block text-sm">
+                                {{ book.title_ar|default:book.title }}
+                            </span>
+                            <span class="text-xs text-gray-500">{{ book.author }}</span>
+                            {% if book.is_free %}
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded mt-1 inline-block">
+                                {% if language in ['ar', 'ar_dz'] %}مجاني{% elif language == 'fr' %}Gratuit{% else %}Free{% endif %}
+                            </span>
+                            {% endif %}
+                            {% if book.url %}
+                            <a href="{{ book.url }}" target="_blank" 
+                               class="text-xs text-blue-600 hover:underline mt-1 block">
+                                {% if language in ['ar', 'ar_dz'] %}اقرأ الآن{% elif language == 'fr' %}Lire{% else %}Read now{% endif %} →
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Companies -->
+                {% if matching_companies %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        🏢 
+                        {% if language in ['ar', 'ar_dz'] %}شركات توظف{% elif language == 'fr' %}Entreprises qui recrutent{% else %}Companies Hiring{% endif %}
+                    </h3>
+                    <div class="space-y-3">
+                        {% for company in matching_companies %}
+                        <div class="p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="font-medium text-gray-800 block">
+                                        {{ company.name_ar|default:company.name }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">{{ company.wilaya }} • {{ company.industry }}</span>
+                                </div>
+                                {% if company.is_hiring %}
+                                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                    {% if language in ['ar', 'ar_dz'] %}يوظف{% elif language == 'fr' %}Recrute{% else %}Hiring{% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if company.website %}
+                            <a href="{{ company.website }}" target="_blank" 
+                               class="text-xs text-blue-600 hover:underline mt-2 block">
+                                {% if language in ['ar', 'ar_dz'] %}زيارة الموقع{% elif language == 'fr' %}Visiter{% else %}Visit website{% endif %} →
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -3,8 +3,10 @@ Resource Retriever Service
 Searches and ranks resources from catalog for roadmap steps.
 """
 from typing import List, Dict
+from django.db import models
 from resources.models import Resource, ResourceLink
 from roadmaps.models import RoadmapStep, StepResource
+from .resource_recommender import ResourceRecommender
 
 
 class ResourceRetriever:
@@ -23,11 +25,10 @@ class ResourceRetriever:
         """
         queryset = Resource.objects.filter(is_active=True)
         
-        # Text search in title, description, and tags
+        # Text search in title and description only (avoid JSON field issues with SQLite)
         queryset = queryset.filter(
             models.Q(title__icontains=query) |
-            models.Q(description__icontains=query) |
-            models.Q(tags__contains=[query])
+            models.Q(description__icontains=query)
         )
         
         # Apply filters
@@ -106,11 +107,13 @@ class ResourceRetriever:
             max_resources: Maximum resources to attach
         """
         for i, resource in enumerate(resources[:max_resources]):
-            StepResource.objects.create(
+            StepResource.objects.get_or_create(
                 step=step,
                 resource=resource,
-                order=i,
-                is_required=(i == 0),  # First resource is required
+                defaults={
+                    'order': i,
+                    'is_required': (i == 0),  # First resource is required
+                }
             )
     
     def populate_roadmap_resources(self, roadmap, profile_preferences: Dict = None) -> int:
@@ -125,17 +128,32 @@ class ResourceRetriever:
             int: Total number of resources attached
         """
         total_attached = 0
-        
+
+        # If database has no resources, sync curated resources for the subject
+        if Resource.objects.count() == 0:
+            subject = None
+            if getattr(roadmap, 'learner_profile', None) and roadmap.learner_profile.subject:
+                subject = roadmap.learner_profile.subject
+            recommender = ResourceRecommender(language=getattr(roadmap.learner_profile, 'language', 'ar'))
+            recommender.sync_to_database(subject=subject)
+
         for step in roadmap.steps.all():
-            # Search for resources matching step topics
+            # Skip if resources already attached
+            if step.step_resources.exists():
+                continue
+
+            # Search for resources matching step topics and subject
             query = step.title
             resources = self.search(query)
-            
+
+            if not resources and getattr(roadmap, 'learner_profile', None):
+                resources = self.search(roadmap.learner_profile.subject)
+
             if resources:
                 ranked = self.rank_for_step(resources, step, profile_preferences)
                 self.attach_resources_to_step(step, ranked)
                 total_attached += min(len(ranked), 3)
-        
+
         return total_attached
 
 

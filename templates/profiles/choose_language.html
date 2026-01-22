@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}مرحباً - اختر لغتك | Welcome - Choose Your Language{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+    <div class="max-w-2xl mx-auto px-4">
+        
+        <!-- Welcome Header -->
+        <div class="text-center mb-8">
+            <div class="text-6xl mb-4">🇩🇿</div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                مرحباً بك في منصة التعلم
+            </h1>
+            <p class="text-xl text-gray-600">
+                Bienvenue sur la plateforme d'apprentissage
+            </p>
+            <p class="text-lg text-gray-500 mt-1">
+                Welcome to the Learning Platform
+            </p>
+        </div>
+
+        <!-- Language Selection Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <h2 class="text-xl font-semibold text-center text-gray-700 mb-6">
+                🌐 اختر لغتك المفضلة / Choisissez votre langue / Choose your language
+            </h2>
+            
+            <form id="language-form" method="POST" action="{% url 'profiles:start_onboarding' %}">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Arabic -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="language" value="ar" class="sr-only peer" checked>
+                        <div class="border-3 border-gray-200 rounded-xl p-6 text-center 
+                                    hover:border-green-400 hover:bg-green-50
+                                    peer-checked:border-green-500 peer-checked:bg-green-50 
+                                    transition-all duration-200 transform hover:scale-105">
+                            <div class="text-4xl mb-3">🇸🇦</div>
+                            <span class="text-xl font-bold text-gray-800 block">العربية</span>
+                            <span class="text-sm text-gray-500">Arabic</span>
+                        </div>
+                    </label>
+                    
+                    <!-- French -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="language" value="fr" class="sr-only peer">
+                        <div class="border-3 border-gray-200 rounded-xl p-6 text-center 
+                                    hover:border-blue-400 hover:bg-blue-50
+                                    peer-checked:border-blue-500 peer-checked:bg-blue-50 
+                                    transition-all duration-200 transform hover:scale-105">
+                            <div class="text-4xl mb-3">🇫🇷</div>
+                            <span class="text-xl font-bold text-gray-800 block">Français</span>
+                            <span class="text-sm text-gray-500">French</span>
+                        </div>
+                    </label>
+                    
+                    <!-- English -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="language" value="en" class="sr-only peer">
+                        <div class="border-3 border-gray-200 rounded-xl p-6 text-center 
+                                    hover:border-purple-400 hover:bg-purple-50
+                                    peer-checked:border-purple-500 peer-checked:bg-purple-50 
+                                    transition-all duration-200 transform hover:scale-105">
+                            <div class="text-4xl mb-3">🇬🇧</div>
+                            <span class="text-xl font-bold text-gray-800 block">English</span>
+                            <span class="text-sm text-gray-500">الإنجليزية</span>
+                        </div>
+                    </label>
+                    
+                    <!-- Algerian Dialect -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="language" value="ar_dz" class="sr-only peer">
+                        <div class="border-3 border-gray-200 rounded-xl p-6 text-center 
+                                    hover:border-red-400 hover:bg-red-50
+                                    peer-checked:border-red-500 peer-checked:bg-red-50 
+                                    transition-all duration-200 transform hover:scale-105">
+                            <div class="text-4xl mb-3">🇩🇿</div>
+                            <span class="text-xl font-bold text-gray-800 block">الدارجة</span>
+                            <span class="text-sm text-gray-500">Algerian Dialect</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Continue Button -->
+                <button type="submit" 
+                        class="w-full mt-8 bg-gradient-to-r from-green-500 to-green-600 
+                               text-white text-xl font-bold py-4 px-8 rounded-xl
+                               hover:from-green-600 hover:to-green-700 
+                               transform hover:scale-105 transition-all duration-200
+                               shadow-lg hover:shadow-xl">
+                    <span class="flex items-center justify-center gap-3">
+                        <span>متابعة / Continuer / Continue</span>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+        </div>
+        
+        <!-- Info Section -->
+        <div class="bg-white/70 rounded-xl p-6 text-center">
+            <h3 class="font-semibold text-gray-700 mb-3">
+                🎯 ماذا ستحصل عليه؟ / Qu'obtiendrez-vous? / What will you get?
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="p-3 bg-white rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">📚</div>
+                    <p class="text-gray-600">خطة تعلم مخصصة<br>Plan personnalisé</p>
+                </div>
+                <div class="p-3 bg-white rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">🎥</div>
+                    <p class="text-gray-600">فيديوهات وكتب<br>Vidéos et livres</p>
+                </div>
+                <div class="p-3 bg-white rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">💼</div>
+                    <p class="text-gray-600">فرص عمل في الجزائر<br>Emplois en Algérie</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

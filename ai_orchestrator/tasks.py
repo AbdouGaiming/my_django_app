@@ -256,8 +256,8 @@ def send_roadmap_reminder_notifications():
             # Check if they have active roadmaps
             from roadmaps.models import Roadmap
             has_active = Roadmap.objects.filter(
-                profile__user=user,
-                status=Roadmap.ACTIVE
+                user=user,
+                status=Roadmap.STATUS_ACTIVE
             ).exists()
             
             if has_active:

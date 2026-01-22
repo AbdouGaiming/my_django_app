@@ -30,7 +30,7 @@ class RoadmapViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter roadmaps to only show user's own roadmaps."""
         return Roadmap.objects.filter(
-            profile__user=self.request.user
+            user=self.request.user
         ).prefetch_related('steps')
     
     def get_serializer_class(self):
@@ -52,13 +52,13 @@ class RoadmapViewSet(viewsets.ModelViewSet):
         """Publish a draft roadmap."""
         roadmap = self.get_object()
         
-        if roadmap.status != Roadmap.DRAFT:
+        if roadmap.status != Roadmap.STATUS_DRAFT:
             return Response(
                 {'error': 'Only draft roadmaps can be published'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        roadmap.status = Roadmap.ACTIVE
+        roadmap.status = Roadmap.STATUS_ACTIVE
         roadmap.save()
         
         return Response({
@@ -70,7 +70,7 @@ class RoadmapViewSet(viewsets.ModelViewSet):
     def archive(self, request, pk=None):
         """Archive a roadmap."""
         roadmap = self.get_object()
-        roadmap.status = Roadmap.ARCHIVED
+        roadmap.status = Roadmap.STATUS_ARCHIVED
         roadmap.save()
         
         return Response({
@@ -85,9 +85,9 @@ class RoadmapViewSet(viewsets.ModelViewSet):
         steps = roadmap.steps.all()
         
         total_steps = steps.count()
-        completed_steps = steps.filter(is_completed=True).count()
-        total_duration = sum(s.estimated_duration for s in steps)
-        completed_duration = sum(s.estimated_duration for s in steps.filter(is_completed=True))
+        completed_steps = steps.filter(status=RoadmapStep.STATUS_COMPLETED).count()
+        total_duration = sum(int(s.estimated_hours * 60) for s in steps)
+        completed_duration = sum(int(s.estimated_hours * 60) for s in steps.filter(status=RoadmapStep.STATUS_COMPLETED))
         
         return Response({
             'total_steps': total_steps,
@@ -107,8 +107,8 @@ class RoadmapStepViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter steps to only show user's roadmap steps."""
         return RoadmapStep.objects.filter(
-            roadmap__profile__user=self.request.user
-        ).select_related('roadmap').prefetch_related('prerequisites', 'resources')
+            roadmap__user=self.request.user
+        ).select_related('roadmap').prefetch_related('prerequisites', 'step_resources')
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -122,11 +122,11 @@ class RoadmapStepViewSet(viewsets.ModelViewSet):
         serializer = StepCompletionSerializer(data=request.data)
         
         if serializer.is_valid():
-            step.is_completed = serializer.validated_data['is_completed']
-            if step.is_completed:
-                step.completed_at = timezone.now()
+            is_completed = serializer.validated_data['is_completed']
+            if is_completed:
+                step.status = RoadmapStep.STATUS_COMPLETED
             else:
-                step.completed_at = None
+                step.status = RoadmapStep.STATUS_ACTIVE
             step.save()
             
             # Log activity
@@ -140,8 +140,8 @@ class RoadmapStepViewSet(viewsets.ModelViewSet):
             
             return Response({
                 'success': True,
-                'is_completed': step.is_completed,
-                'completed_at': step.completed_at
+                'is_completed': step.status == RoadmapStep.STATUS_COMPLETED,
+                'status': step.status
             })
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -160,7 +160,7 @@ class RoadmapStepViewSet(viewsets.ModelViewSet):
                     step = get_object_or_404(
                         RoadmapStep,
                         id=step_id,
-                        roadmap__profile__user=request.user
+                        roadmap__user=request.user
                     )
                     step.sequence = new_sequence
                     step.save()
@@ -186,6 +186,6 @@ class StepResourceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return StepResource.objects.filter(
-            step__roadmap__profile__user=self.request.user
+            step__roadmap__user=self.request.user
         )
 

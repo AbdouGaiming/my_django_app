@@ -29,13 +29,15 @@ class StepResourceSerializer(serializers.ModelSerializer):
 class RoadmapStepSerializer(serializers.ModelSerializer):
     """Serializer for RoadmapStep model."""
     
-    resources = StepResourceSerializer(source='stepresource_set', many=True, read_only=True)
+    resources = StepResourceSerializer(source='step_resources', many=True, read_only=True)
     prerequisite_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=RoadmapStep.objects.all(),
         source='prerequisites',
         required=False
     )
+    is_completed = serializers.SerializerMethodField()
+    estimated_duration = serializers.SerializerMethodField()
     
     class Meta:
         model = RoadmapStep
@@ -44,18 +46,25 @@ class RoadmapStepSerializer(serializers.ModelSerializer):
             'roadmap',
             'sequence',
             'title',
-            'content',
+            'description',
+            'estimated_hours',
             'estimated_duration',
-            'mastery_check',
+            'objectives',
+            'status',
             'is_completed',
-            'completed_at',
             'prerequisites',
             'prerequisite_ids',
             'resources',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'roadmap', 'completed_at', 'resources', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'roadmap', 'resources', 'created_at', 'updated_at']
+    
+    def get_is_completed(self, obj):
+        return obj.status == RoadmapStep.STATUS_COMPLETED
+    
+    def get_estimated_duration(self, obj):
+        return int(obj.estimated_hours * 60)
 
 
 class RoadmapStepDetailSerializer(RoadmapStepSerializer):
@@ -84,13 +93,13 @@ class RoadmapListSerializer(serializers.ModelSerializer):
         ]
     
     def get_completed_steps(self, obj):
-        return obj.steps.filter(is_completed=True).count()
+        return obj.steps.filter(status=RoadmapStep.STATUS_COMPLETED).count()
     
     def get_progress_percentage(self, obj):
         total = obj.steps.count()
         if total == 0:
             return 0
-        completed = obj.steps.filter(is_completed=True).count()
+        completed = obj.steps.filter(status=RoadmapStep.STATUS_COMPLETED).count()
         return int((completed / total) * 100)
 
 
@@ -98,13 +107,13 @@ class RoadmapSerializer(serializers.ModelSerializer):
     """Full serializer for Roadmap model."""
     
     steps = RoadmapStepSerializer(many=True, read_only=True)
-    profile_subject = serializers.CharField(source='profile.subject', read_only=True)
+    profile_subject = serializers.CharField(source='learner_profile.subject', read_only=True)
     
     class Meta:
         model = Roadmap
         fields = [
             'id',
-            'profile',
+            'learner_profile',
             'profile_subject',
             'title',
             'description',
@@ -114,7 +123,7 @@ class RoadmapSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'profile', 'schema_version', 'steps', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'learner_profile', 'schema_version', 'steps', 'created_at', 'updated_at']
 
 
 class RoadmapCreateSerializer(serializers.ModelSerializer):
@@ -131,7 +140,8 @@ class RoadmapCreateSerializer(serializers.ModelSerializer):
         from profiles.models import LearnerProfile
         profile = LearnerProfile.objects.get(id=profile_id, user=request.user)
         
-        validated_data['profile'] = profile
+        validated_data['learner_profile'] = profile
+        validated_data['user'] = request.user
         return super().create(validated_data)
 
 

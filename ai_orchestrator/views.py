@@ -25,7 +25,7 @@ class AIJobViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        return AIJob.objects.filter(profile__user=self.request.user)
+        return AIJob.objects.filter(user=self.request.user)
     
     @action(detail=True, methods=['get'])
     def status(self, request, pk=None):
@@ -34,8 +34,8 @@ class AIJobViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({
             'status': job.status,
             'progress': job.progress,
-            'current_stage': job.current_stage,
-            'message': job.error_message if job.status == AIJob.FAILED else None,
+            'progress_message': job.progress_message,
+            'message': job.error_message if job.status == AIJob.STATUS_FAILED else None,
         })
     
     @action(detail=True, methods=['post'])
@@ -182,7 +182,7 @@ class ValidateRoadmapView(APIView):
         try:
             roadmap = Roadmap.objects.get(
                 id=roadmap_id,
-                profile__user=request.user
+                user=request.user
             )
         except Roadmap.DoesNotExist:
             return Response(

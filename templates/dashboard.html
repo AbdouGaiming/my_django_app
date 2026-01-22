@@ -167,8 +167,13 @@
                     {{ roadmap.title }}
                   </h3>
                   <p class="text-sm text-gray-500">
-                    {{ roadmap.steps.count }} steps • {{
-                    roadmap.total_estimated_hours }}h estimated
+                    {% if roadmap.learner_profile.language == 'ar' or roadmap.learner_profile.language == 'ar_dz' %}
+                    {{ roadmap.steps.count }} خطوة • {{ roadmap.total_estimated_hours }} ساعة تقديرية
+                    {% elif roadmap.learner_profile.language == 'fr' %}
+                    {{ roadmap.steps.count }} étapes • {{ roadmap.total_estimated_hours }}h estimées
+                    {% else %}
+                    {{ roadmap.steps.count }} steps • {{ roadmap.total_estimated_hours }}h estimated
+                    {% endif %}
                   </p>
                 </div>
                 <div class="flex items-center">

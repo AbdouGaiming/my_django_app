@@ -61,11 +61,11 @@ class Validator:
     
     def _validate_time_budget(self, steps: List, roadmap) -> None:
         """Validate total time stays within budget."""
-        total_minutes = sum(step.estimated_duration for step in steps)
+        total_minutes = sum(int(step.estimated_hours * 60) for step in steps)
         
         # Get learner profile to check weekly hours and deadline
         try:
-            profile = roadmap.profile
+            profile = roadmap.learner_profile
             weekly_minutes = profile.weekly_hours * 60
             
             if profile.deadline:
@@ -97,10 +97,10 @@ class Validator:
             if not step.title or len(step.title.strip()) < 3:
                 self.errors.append(f"Step {step.sequence} has empty or invalid title")
             
-            if not step.content or len(step.content.strip()) < 10:
+            if not step.description or len(step.description.strip()) < 5:
                 self.warnings.append(f"Step '{step.title}' has minimal content description")
             
-            if step.estimated_duration <= 0:
+            if step.estimated_hours <= 0:
                 self.errors.append(f"Step '{step.title}' has invalid duration")
     
     def _validate_sequence_continuity(self, steps: List) -> None:
@@ -118,7 +118,8 @@ class Validator:
         steps_without_resources = []
         
         for step in steps:
-            if step.resources.count() == 0:
+            # Use step_resources related name instead of resources
+            if step.step_resources.count() == 0:
                 steps_without_resources.append(step.title)
         
         if steps_without_resources:

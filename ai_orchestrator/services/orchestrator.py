@@ -52,40 +52,50 @@ class AIOrchestrator:
         }
         
         try:
-            # Stage 1: Normalize profile
+            # Stage 1: Normalize and validate profile
             result['stage'] = 'normalize'
+            validation_errors = self.normalizer.validate(self.profile)
+            if validation_errors:
+                result['errors'] = validation_errors
+                return result
+            
             normalized = self.normalizer.normalize(self.profile)
-            if not normalized.get('valid', False):
-                result['errors'] = normalized.get('errors', [])
-                return result
             
-            # Stage 2: Check uncertainty
+            # Stage 2: Check uncertainty (skip if questions already answered)
             result['stage'] = 'uncertainty'
-            uncertainty = self.uncertainty_scorer.calculate_uncertainty(self.profile)
             
-            if uncertainty > 0.5:
-                # Need clarifying questions
-                questions = self.uncertainty_scorer.generate_questions(
-                    self.profile,
-                    self.uncertainty_scorer.get_required_questions_count(uncertainty)
-                )
-                result['clarifying_questions'] = questions
-                result['success'] = True
-                result['stage'] = 'needs_clarification'
-                return result
+            # Skip uncertainty check if user has already completed onboarding
+            if not self.profile.questions_answered:
+                uncertainty = self.uncertainty_scorer.calculate_uncertainty(self.profile)
+                
+                if uncertainty > 0.5:
+                    # Need clarifying questions
+                    questions = self.uncertainty_scorer.generate_questions(
+                        self.profile,
+                        self.uncertainty_scorer.get_required_questions_count(uncertainty)
+                    )
+                    result['clarifying_questions'] = questions
+                    result['success'] = True
+                    result['stage'] = 'needs_clarification'
+                    return result
             
             # Stage 3: Plan roadmap
             result['stage'] = 'planning'
-            plan = self.planner.plan(self.profile)
+            steps = self.planner.plan(self.profile)
             
-            if not plan.get('steps'):
+            if not steps:
                 result['errors'].append("Failed to generate roadmap plan")
                 return result
             
             # Stage 4: Create roadmap with steps
             result['stage'] = 'creating'
             with transaction.atomic():
-                roadmap = self.planner.create_roadmap(self.profile, plan)
+                roadmap = self.planner.create_roadmap(
+                    self.profile.user, 
+                    self.profile, 
+                    steps,
+                    {'profile_hash': f'{self.profile.subject}_{self.profile.level}'}
+                )
                 
                 # Stage 5: Attach resources
                 result['stage'] = 'resources'
@@ -167,15 +177,16 @@ class AIOrchestrator:
             return {'error': 'Profile missing weekly_hours'}
         
         # Get plan without creating roadmap
-        plan = self.planner.plan(self.profile)
-        total_minutes = plan.get('total_duration', 0)
+        steps = self.planner.plan(self.profile)
+        total_hours = sum(step.get('hours', 0) for step in steps)
+        total_minutes = total_hours * 60
         
         weekly_minutes = self.profile.weekly_hours * 60
         
         weeks = total_minutes / weekly_minutes if weekly_minutes else 0
         
         return {
-            'total_hours': total_minutes / 60,
+            'total_hours': total_hours,
             'weeks': round(weeks, 1),
             'months': round(weeks / 4, 1),
             'weekly_commitment': self.profile.weekly_hours,

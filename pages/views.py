@@ -11,6 +11,15 @@ from ai_orchestrator.services.llm_service import llm_service
 
 def home_view(request):
     """Render the home page."""
+    if request.user.is_authenticated:
+        # Check if user has a profile and has completed onboarding
+        try:
+            profile = LearnerProfile.objects.get(user=request.user)
+            if profile.onboarding_complete:
+                return redirect('dashboard')
+        except LearnerProfile.DoesNotExist:
+            pass
+        return redirect('profiles:choose_language')
     return render(request, 'home.html')
 
 
@@ -18,7 +27,18 @@ def home_view(request):
 def dashboard_view(request):
     """Render the dashboard page."""
     user = request.user
-    roadmaps = Roadmap.objects.filter(user=user).prefetch_related('steps').order_by('-created_at')[:5]
+    
+    # NEW: Check onboarding status
+    try:
+        profile = LearnerProfile.objects.get(user=user)
+        if not profile.onboarding_complete:
+            return redirect('profiles:choose_language')
+    except LearnerProfile.DoesNotExist:
+        # Create empty profile to initiate onboarding
+        LearnerProfile.objects.create(user=user)
+        return redirect('profiles:choose_language')
+
+    roadmaps = Roadmap.objects.filter(user=user).select_related('learner_profile').prefetch_related('steps').order_by('-created_at')[:5]
     
     # Calculate stats
     active_roadmaps_count = Roadmap.objects.filter(user=user, status=Roadmap.STATUS_ACTIVE).count()
@@ -76,7 +96,21 @@ def my_roadmaps_view(request):
 
 @login_required
 def create_roadmap_view(request):
-    """Create a new roadmap using AI."""
+    """Create a new roadmap using AI - Redirect to the new onboarding wizard."""
+    try:
+        profile = LearnerProfile.objects.get(user=request.user)
+        if not profile.onboarding_complete:
+            return redirect('profiles:choose_language')
+    except LearnerProfile.DoesNotExist:
+        return redirect('profiles:choose_language')
+        
+    # If they completed onboarding but clicked create roadmap, 
+    # we can either let them use the old form or restart the wizard.
+    # For now, let's just use the wizard for everything new.
+    return redirect('profiles:choose_language')
+
+def old_create_roadmap_view(request):
+    """Original create roadmap view."""
     if request.method == 'POST':
         try:
             # Get form data
@@ -175,9 +209,13 @@ def create_roadmap_view(request):
     return render(request, 'roadmaps/create_roadmap.html')
 
 
+from ai_orchestrator.services.market_analyzer import AlgerianMarketAnalyzer
+from ai_orchestrator.services.resource_recommender import ResourceRecommender
+from profiles.models import AlgerianCompany, JobOpportunity
+
 @login_required
 def roadmap_detail_view(request, roadmap_id):
-    """View roadmap details."""
+    """View roadmap details with Algerian market insights."""
     roadmap = get_object_or_404(Roadmap, id=roadmap_id, user=request.user)
     steps = roadmap.steps.all().order_by('sequence').prefetch_related('step_resources__resource')
     
@@ -188,6 +226,28 @@ def roadmap_detail_view(request, roadmap_id):
     progress_percentage = int((completed / total) * 100) if total else 0
     total_duration_hours = sum(s.estimated_hours for s in steps)
     
+    # Get user profile for market context
+    try:
+        profile = LearnerProfile.objects.get(user=request.user)
+    except LearnerProfile.DoesNotExist:
+        profile = None
+
+    # Get market insights
+    market_analyzer = AlgerianMarketAnalyzer()
+    market_insights = market_analyzer.get_market_insights(roadmap.title, profile.language if profile else 'ar')
+    relevant_companies = market_analyzer.get_matching_companies([roadmap.title])
+    
+    # Get job opportunities based on matching company names
+    company_names = [c.get('name', '') for c in relevant_companies]
+    job_opportunities = JobOpportunity.objects.filter(
+        company__name__in=company_names,
+        is_active=True
+    ).select_related('company')[:5]
+
+    # Get recommended local resources
+    recommender = ResourceRecommender()
+    local_resources = recommender.get_localized_resources(roadmap.title, profile.language if profile else 'ar')
+
     # Add is_completed property to steps for template
     for step in steps:
         step.is_completed = step.status == RoadmapStep.STATUS_COMPLETED
@@ -201,6 +261,10 @@ def roadmap_detail_view(request, roadmap_id):
         'in_progress_count': in_progress,
         'total_count': total,
         'total_duration_hours': total_duration_hours,
+        'market_insights': market_insights,
+        'job_opportunities': job_opportunities,
+        'local_resources': local_resources,
+        'profile': profile,
     }
     return render(request, 'roadmaps/roadmap_detail.html', context)
 
