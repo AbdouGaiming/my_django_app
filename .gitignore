@@ -62,6 +62,12 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
+# Environment variables (NEVER commit this!)
+.env
+
+# Static files collected by Django
+staticfiles/
+
 # Flask stuff:
 instance/
 .webassets-cache
