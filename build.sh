@@ -11,6 +11,7 @@ python manage.py collectstatic --no-input
 # Run database migrations
 python manage.py migrate
 
+
 # Create Superuser logic
 if [ "$CREATE_SUPERUSER" = "True" ]; then
   python manage.py shell << END

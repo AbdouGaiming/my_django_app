@@ -17,6 +17,17 @@ from pathlib import Path
 import dj_database_url  # type: ignore[import-not-found]
 from dotenv import load_dotenv
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3', # This keeps the DB inside your project folder
+    }
+}
+
 # Load environment variables from .env file
 load_dotenv()
 
