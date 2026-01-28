@@ -5,27 +5,28 @@ set -o errexit
 # Install dependencies
 pip install -r requirements.txt
 
-# Convert static files
+# Collect static files
 python manage.py collectstatic --no-input
 
 # Run database migrations
 python manage.py migrate
 
-
-# Create Superuser logic
+# Create Superuser logic (Corrected for Custom User Model)
 if [ "$CREATE_SUPERUSER" = "True" ]; then
   python manage.py shell << END
 from django.contrib.auth import get_user_model
 import os
+
 User = get_user_model()
-username = os.environ.get('DJANGO_SUPERUSER_USERNAME')
 email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
 password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
 
-if not User.objects.filter(username=username).exists():
-    User.objects.create_superuser(username, email, password)
-    print(f"Superuser {username} created.")
+# Check if user exists by EMAIL, not username
+if not User.objects.filter(email=email).exists():
+    # Create the superuser using email as the unique identifier
+    User.objects.create_superuser(email=email, password=password)
+    print(f"Superuser {email} created.")
 else:
-    print(f"Superuser {username} already exists.")
+    print(f"Superuser {email} already exists.")
 END
 fi
