@@ -19,7 +19,10 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# REPLACE YOUR OLD DATABASE CONFIG WITH THIS:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
