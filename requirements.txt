@@ -6,6 +6,7 @@ django-cors-headers==4.6.0
 
 # Environment variables
 python-dotenv==1.0.1
+dj-database-url==2.2.0
 
 # Production server
 gunicorn==22.0.0

@@ -88,7 +88,7 @@ Visit: http://127.0.0.1:8000
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 
-**Note:** This is a Django application and cannot be deployed to Netlify. Use Railway, Render, or Heroku instead.
+**Note:** This is a Django application and cannot be deployed to Netlify. Use Render instead.
 
 ## Environment Variables
 

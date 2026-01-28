@@ -4,39 +4,15 @@
 
 **Netlify is for static sites only** (HTML, CSS, JavaScript, JAMstack apps). Django is a Python backend framework that requires a server environment.
 
-## 🚀 Recommended Hosting Platforms
+## 🚀 Recommended Hosting Platform
 
-### 1. **Railway** (Recommended - Easiest)
-
-- Free tier available
-- Automatic deployments from Git
-- Built-in PostgreSQL database
-- Environment variables management
-
-**Steps:**
-
-1. Go to [railway.app](https://railway.app)
-2. Connect your GitHub repository
-3. Add PostgreSQL service
-4. Set environment variables (see below)
-5. Deploy automatically
-
-### 2. **Render**
+### **Render** (Free Tier)
 
 - Free tier available
 - Easy setup
 - Free PostgreSQL database
 
-### 3. **Heroku**
-
-- Popular choice
-- Easy deployment
-- Add-ons available
-
-### 4. **PythonAnywhere**
-
-- Python-specific hosting
-- Free tier for learning projects
+Render provides a free web service and free PostgreSQL database.
 
 ## 🔐 Environment Variables to Set
 
@@ -45,7 +21,7 @@ When deploying, set these environment variables on your hosting platform:
 ```bash
 SECRET_KEY=your-production-secret-key-here-generate-a-new-one
 DEBUG=False
-ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+ALLOWED_HOSTS=your-domain.com
 DATABASE_URL=your-production-database-url
 GROQ_API_KEY=your-groq-api-key-here
 CORS_ALLOWED_ORIGINS=https://your-frontend-domain.com
@@ -68,14 +44,14 @@ The platform will automatically run:
 ```bash
 python manage.py migrate
 python manage.py collectstatic --noinput
-gunicorn my_site.wsgi
+gunicorn my_site.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
 ## 🗄️ Database
 
 For production, switch from SQLite to PostgreSQL:
 
-- Railway/Render provide free PostgreSQL
+- Render provides free PostgreSQL
 - Automatically configured via DATABASE_URL
 
 ## 📝 After Deployment
@@ -112,7 +88,7 @@ For production, switch from SQLite to PostgreSQL:
 If you have a separate frontend (React, Vue, etc.):
 
 1. Deploy frontend to **Netlify** or **Vercel**
-2. Deploy Django backend to **Railway** or **Render**
+2. Deploy Django backend to **Render**
 3. Update CORS_ALLOWED_ORIGINS with frontend URL
 4. Update frontend API URL to backend domain
 
@@ -138,6 +114,5 @@ If you have a separate frontend (React, Vue, etc.):
 
 For deployment issues, check:
 
-- Railway Docs: https://docs.railway.app
 - Render Docs: https://render.com/docs
 - Django Deployment Checklist: https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/

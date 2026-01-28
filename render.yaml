@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: my-django-app
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn my_site.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: CELERY_RESULT_BACKEND
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: my-django-db
+          property: connectionString
+
+databases:
+  - name: my-django-db
+    plan: free
+    databaseName: my_django_app
+    user: my_django_app_user

@@ -172,32 +172,38 @@ Roadmap{% endblock %} {% block content %}
           <div class="mb-4">
             <h4 class="text-sm font-medium text-gray-700 mb-2">Resources:</h4>
             <div class="space-y-2">
-              {% for sr in step.step_resources.all %} {% with
-              primary_link=sr.resource.links.first %} {% with
-              resource_url=primary_link.url|default:sr.resource.get_youtube_url
-              %}
-              <a
-                href="{{ resource_url }}"
-                target="_blank"
-                class="flex items-center p-2 bg-white rounded border border-gray-200 hover:border-indigo-300 transition"
-              >
-                <span class="mr-2">
-                  {% if sr.resource.resource_type == 'video' %} 📹 {% elif
-                  sr.resource.resource_type == 'article' %} 📄 {% elif
-                  sr.resource.resource_type == 'book' %} 📚 {% else %} 🔗 {%
-                  endif %}
-                </span>
-                <span class="flex-1 text-gray-700"
-                  >{{ sr.resource.title }}</span
-                >
-                {% if sr.is_required %}
-                <span
-                  class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded"
-                  >Required</span
-                >
-                {% endif %}
-              </a>
-              {% endwith %} {% endwith %} {% endfor %}
+              {% for sr in step.step_resources.all %}
+                {% with primary_link=sr.resource.links.first %}
+                  {% with resource_url=primary_link.url|default:sr.resource.get_youtube_url %}
+                    <a
+                      href="{{ resource_url }}"
+                      target="_blank"
+                      class="flex items-center p-2 bg-white rounded border border-gray-200 hover:border-indigo-300 transition"
+                    >
+                      <span class="mr-2">
+                        {% if sr.resource.resource_type == 'video' %}
+                          📹
+                        {% elif sr.resource.resource_type == 'article' %}
+                          📄
+                        {% elif sr.resource.resource_type == 'book' %}
+                          📚
+                        {% else %}
+                          🔗
+                        {% endif %}
+                      </span>
+                      <span class="flex-1 text-gray-700"
+                        >{{ sr.resource.title }}</span
+                      >
+                      {% if sr.is_required %}
+                        <span
+                          class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded"
+                          >Required</span
+                        >
+                      {% endif %}
+                    </a>
+                  {% endwith %}
+                {% endwith %}
+              {% endfor %}
             </div>
           </div>
           {% endif %}

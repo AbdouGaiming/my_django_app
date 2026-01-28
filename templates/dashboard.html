@@ -158,83 +158,83 @@
           >
         </div>
         <div class="divide-y divide-gray-200">
-          {% if roadmaps %} {% for roadmap in roadmaps %}
-          <div class="px-6 py-4 hover:bg-gray-50">
-            <a href="{% url 'roadmap_detail' roadmap.id %}" class="block">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-sm font-medium text-gray-900">
-                    {{ roadmap.title }}
-                  </h3>
-                  <p class="text-sm text-gray-500">
-                    {% if roadmap.learner_profile.language == 'ar' or
-                    roadmap.learner_profile.language == 'ar_dz' %} {{
-                    roadmap.steps.count }} خطوة • {{
-                    roadmap.total_estimated_hours }} ساعة تقديرية {% elif
-                    roadmap.learner_profile.language == 'fr' %} {{
-                    roadmap.steps.count }} étapes • {{
-                    roadmap.total_estimated_hours }}h estimées {% else %} {{
-                    roadmap.steps.count }} steps • {{
-                    roadmap.total_estimated_hours }}h estimated {% endif %}
-                  </p>
-                </div>
-                <div class="flex items-center">
-                  <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
-                    <div
-                      class="bg-indigo-600 h-2 rounded-full"
-                      style="width: {{ roadmap.progress_percentage }}%"
-                    ></div>
+          {% if roadmaps %}
+            {% for roadmap in roadmaps %}
+              <div class="px-6 py-4 hover:bg-gray-50">
+                <a href="{% url 'roadmap_detail' roadmap.id %}" class="block">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="text-sm font-medium text-gray-900">
+                        {{ roadmap.title }}
+                      </h3>
+                      <p class="text-sm text-gray-500">
+                        {% if roadmap.learner_profile.language == 'ar' or roadmap.learner_profile.language == 'ar_dz' %}
+                          {{ roadmap.steps.count }} خطوة • {{ roadmap.total_estimated_hours }} ساعة تقديرية
+                        {% elif roadmap.learner_profile.language == 'fr' %}
+                          {{ roadmap.steps.count }} étapes • {{ roadmap.total_estimated_hours }}h estimées
+                        {% else %}
+                          {{ roadmap.steps.count }} steps • {{ roadmap.total_estimated_hours }}h estimated
+                        {% endif %}
+                      </p>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                        <div
+                          class="bg-indigo-600 h-2 rounded-full"
+                          style="width: {{ roadmap.progress_percentage }}%"
+                        ></div>
+                      </div>
+                      <span class="text-sm text-gray-500">
+                        {{ roadmap.progress_percentage }}%
+                      </span>
+                    </div>
                   </div>
-                  <span class="text-sm text-gray-500"
-                    >{{ roadmap.progress_percentage }}%</span
-                  >
-                </div>
+                </a>
               </div>
-            </a>
-          </div>
-          {% endfor %} {% else %}
-          <div class="px-6 py-12 text-center">
-            <svg
-              class="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">
-              No roadmaps yet
-            </h3>
-            <p class="mt-1 text-sm text-gray-500">
-              Get started by creating your first learning roadmap.
-            </p>
-            <div class="mt-6">
-              <a
-                href="{% url 'create_roadmap' %}"
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+            {% endfor %}
+          {% else %}
+            <div class="px-6 py-12 text-center">
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  class="-ml-1 mr-2 h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">
+                No roadmaps yet
+              </h3>
+              <p class="mt-1 text-sm text-gray-500">
+                Get started by creating your first learning roadmap.
+              </p>
+              <div class="mt-6">
+                <a
+                  href="{% url 'create_roadmap' %}"
+                  class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Create Roadmap
-              </a>
+                  <svg
+                    class="-ml-1 mr-2 h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  Create Roadmap
+                </a>
+              </div>
             </div>
-          </div>
           {% endif %}
         </div>
       </div>
