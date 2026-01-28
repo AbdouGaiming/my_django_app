@@ -65,6 +65,7 @@ media/
 # Environment variables (NEVER commit this!)
 .env
 
+
 # Static files collected by Django
 staticfiles/
 

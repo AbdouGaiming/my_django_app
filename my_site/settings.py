@@ -233,3 +233,8 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'a-fallback-safe-key-for-dev')
+
+# DEBUG should be False in production
+DEBUG = 'RENDER' not in os.environ
