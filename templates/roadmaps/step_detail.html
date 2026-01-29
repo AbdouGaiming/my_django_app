@@ -1,5 +1,6 @@
-{% extends 'base.html' %} {% block title %}{{ step.title }} - Step Detail{%
-endblock %} {% block content %}
+{% extends 'base.html' %}
+{% block title %}{{ step.title }} - Step Detail{% endblock %}
+{% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
   <!-- Breadcrumb -->
   <nav class="mb-6">
@@ -156,9 +157,9 @@ endblock %} {% block content %}
 
         {% if step.step_resources.all %}
         <div class="space-y-3">
-          {% for sr in step.step_resources.all %} {% with
-          primary_link=sr.resource.links.first %} {% with
-          resource_url=primary_link.url|default:sr.resource.get_youtube_url %}
+          {% for sr in step.step_resources.all %}
+          {% with primary_link=sr.resource.links.first %}
+          {% with resource_url=primary_link.url|default:sr.resource.get_youtube_url %}
           <a
             href="{{ resource_url }}"
             target="_blank"
@@ -203,7 +204,8 @@ endblock %} {% block content %}
                   <span>{{ sr.resource.get_difficulty_display }}</span>
                   {% if sr.resource.duration_minutes %}
                   <span>{{ sr.resource.duration_minutes }} min</span>
-                  {% endif %} {% if sr.resource.is_free %}
+                  {% endif %}
+                  {% if sr.resource.is_free %}
                   <span class="text-green-600">Free</span>
                   {% endif %}
                 </div>
@@ -225,7 +227,9 @@ endblock %} {% block content %}
               </div>
             </div>
           </a>
-          {% endwith %} {% endwith %} {% endfor %}
+          {% endwith %}
+          {% endwith %}
+          {% endfor %}
         </div>
         {% else %}
         <div class="text-center py-8 text-gray-500">

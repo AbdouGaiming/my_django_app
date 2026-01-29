@@ -1,0 +1,9 @@
+# Ignore Django templates - Prettier breaks them
+templates/**/*.html
+
+# Ignore Python files
+*.py
+
+# Ignore other files
+*.md
+*.txt

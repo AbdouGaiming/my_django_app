@@ -158,7 +158,7 @@
           >
         </div>
         <div class="divide-y divide-gray-200">
-          {% if roadmaps %} {% for roadmap in roadmaps %}
+          {% for roadmap in roadmaps %}
           <div class="px-6 py-4 hover:bg-gray-50">
             <a href="{% url 'roadmap_detail' roadmap.id %}" class="block">
               <div class="flex items-center justify-between">
@@ -167,15 +167,13 @@
                     {{ roadmap.title }}
                   </h3>
                   <p class="text-sm text-gray-500">
-                    {% if roadmap.learner_profile.language == 'ar' or
-                    roadmap.learner_profile.language == 'ar_dz' %} {{
-                    roadmap.steps.count }} خطوة • {{
-                    roadmap.total_estimated_hours }} ساعة تقديرية {% elif
-                    roadmap.learner_profile.language == 'fr' %} {{
-                    roadmap.steps.count }} étapes • {{
-                    roadmap.total_estimated_hours }}h estimées {% else %} {{
-                    roadmap.steps.count }} steps • {{
-                    roadmap.total_estimated_hours }}h estimated {% endif %}
+                    {% if roadmap.learner_profile.language == 'ar' or roadmap.learner_profile.language == 'ar_dz' %}
+                      {{ roadmap.steps.count }} خطوة • {{ roadmap.total_estimated_hours }} ساعة تقديرية
+                    {% elif roadmap.learner_profile.language == 'fr' %}
+                      {{ roadmap.steps.count }} étapes • {{ roadmap.total_estimated_hours }}h estimées
+                    {% else %}
+                      {{ roadmap.steps.count }} steps • {{ roadmap.total_estimated_hours }}h estimated
+                    {% endif %}
                   </p>
                 </div>
                 <div class="flex items-center">
@@ -192,7 +190,7 @@
               </div>
             </a>
           </div>
-          {% endfor %} {% else %}
+          {% empty %}
           <div class="px-6 py-12 text-center">
             <svg
               class="mx-auto h-12 w-12 text-gray-400"
@@ -235,7 +233,7 @@
               </a>
             </div>
           </div>
-          {% endif %}
+          {% endfor %}
         </div>
       </div>
     </div>
